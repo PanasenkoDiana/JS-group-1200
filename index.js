@@ -11,7 +11,15 @@ app.get('/', (req, res)=>{
     res.json('text')
 }
 )
+app.get('/Valera', (req, res)=>{
+    res.json({
+        name: "Valera",
+        age: 15,
+        hobby: "ne delyat domashnee zadanye"
+    })
+})
 
 app.listen(PORT, HOST, ()=>{
     console.log(`Сервер запущен на http://${HOST}:${PORT}`)
 })
+
