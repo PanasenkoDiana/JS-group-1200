@@ -1,4 +1,5 @@
 const express = require('express');
+const moment = require("moment");
 
 const app = express();
 
@@ -11,6 +12,18 @@ app.get('/', (req, res)=>{
     res.json('text')
 }
 )
+
+function getCurrentDay() {
+    return moment().format("dddd"); 
+    
+}
+
+app.get("/timestamp", (req, res) => {
+    res.json({ 
+        day: getCurrentDay() 
+    });
+});
+
 app.get('/Valera', (req, res)=>{
     res.json({
         name: "Valera",
@@ -33,6 +46,8 @@ app.get('/Arina', (req,res)=>{
         hobby: "12345678"
     })
 })
+
+
 
 app.listen(PORT, HOST, ()=>{
     console.log(`Сервер запущен на http://${HOST}:${PORT}`)
