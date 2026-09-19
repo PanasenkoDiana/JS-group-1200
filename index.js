@@ -1,11 +1,13 @@
 const express = require('express');
 
 const app = express();
+// app.use(express.json()) - встроенный middleware, который позволяет спарсить json обьект в js обьект
+app.use(express.json())
 
 const PORT = 8000
 const HOST = 'localhost'; 
 
-const products = [
+let products = [
     {
         id: 1,
         name: "test",
@@ -44,6 +46,56 @@ app.get('/', (req, res)=>{
 }
 )
 
+function addProduct(newProduct){
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            products = [...products, newProduct]
+            resolve(newProduct)
+        },500)
+    })
+}
+// app.post - позволяет обрабатывать, отправлять пост запрос
+app.post('/products', async (req, res)=> {
+    // req.body - хранит в себе тело пост запроса
+    console.log(req.body)
+    const { name, price, category } = req.body;
+    if  (
+        // trim() - функция позволяет убрать все пробелы
+        // 
+        typeof name !== 'string' || !name.trim() || 
+        typeof price !== 'number' || price <= 0 ||
+        typeof category !== 'string' || !category.trim()
+    ){
+        return res.status(422).json({message: "invalid product"})
+        }
+    const duplicate = products.find((product) => {
+
+        // сравнивает свойство name из массива продуктов с данными которые приходят
+        // toLowerCase() - позволяет изменить реестр букв на маленькие
+        return product.name.toLowerCase() === name.trim( ).toLowerCase()
+    })
+    if (duplicate){
+        return res.status(409).json({message:'product already exist'})
+
+    }
+    const newProduct = {
+        id: products.length + 1,
+        name: name.trim(),
+        price,
+        category: category.trim()
+    }
+        try{
+        const createdProduct = await addProduct(newProduct)
+        return res.status(201).json({message:'Created product'})
+    }catch{
+        console.error(error)
+        return res.status(500).json({message:'Failed to create'})
+    }
+    // sendStatus() - позволяет отправить статус в ответ
+    res.sendStatus(200)
+})
+
+
 // query параметры позволяют передать доп. данные в url
 // http://localhost:8000/products?take=2&category="test1category"
 // получаем несколько продуктов с помощью slice
@@ -57,7 +109,7 @@ app.get('/products', (req, res) => {
     const takeNumber = Number(take)
     //если  take не был передан,возвращаем масив products
     if (! take ) {
-        res.status(200).json(products)
+        return res.status(200).json(products)
     }
     
     // Являиться ли take целым числом Number.isInteger(takeNumber) и являиться ли оно положительным числомtakeNumber <= 0
