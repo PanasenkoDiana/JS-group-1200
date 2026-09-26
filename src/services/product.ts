@@ -1,14 +1,20 @@
 import * as productRepository from "../repositories/product.js"
 
-export function getProducts(take){
+interface CreateProductData{
+    name: string
+    price: number
+    image?: string
+    category: string
+}
+export const getProducts=(take?:number)=>{
     return productRepository.getAll(take)
 }
 
-export function getProductById(id){
+export const getProductById=(id:number)=>{
     return productRepository.getById(id)
 }
 
-export async function createdProduct(data) {
+export const createdProduct=async(data:CreateProductData)=>{
     const duplicate = productRepository.findByName(data.name)
     if (duplicate) {
         return null
@@ -17,7 +23,7 @@ export async function createdProduct(data) {
     const newProduct = {
         id: products.length + 1,
         name: data.name.trim(),
-        price: data.price(),
+        price: data.price,
         category: data.category.trim(),
         image: data.image ?? ""   
     }

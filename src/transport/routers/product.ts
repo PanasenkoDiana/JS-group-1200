@@ -1,4 +1,4 @@
-import { getProductById,getProducts,createProduct } from "../handlers/product";
+import { getProductById,getProducts,createProduct } from "../handlers/product.js";
 //что бы создавать обычные пути
 import { Router } from "express";
 

@@ -1,6 +1,10 @@
-import * as productService from "../services/product.js"
+import * as productService from "../../services/product.js"
+import type { Request, Response } from "express"
+import type { CreateProductRequest } from "../dto/product/requests.js"
+import type { ProductRespone } from "../dto/product/responses.js"
+import type { ErrorResponse } from "../dto/product/errors.js"
 
-export function getProducts(req, res) {
+export const getProducts=(req:Request, res:Response)=>{
     const {take} = req.query
 
     if (!take) {
@@ -16,7 +20,7 @@ export function getProducts(req, res) {
     res.status(200).json(productService.getProducts(takeNumber))
 }
 
-export function getProductById(req,res){
+export const getProductById=(req:Request,res:Response)=>{
     const { id } = req.params
     const productId = Number(id)
     if (! Number.isInteger(productId) || productId <= 0){
@@ -32,7 +36,7 @@ export function getProductById(req,res){
     res.status(200).json(product)
 }
 
-export async function createProduct(req,res){
+export const createProduct=async(req:Request,res:Response)=>{
     const { name, price, category, image } = req.body;
     if  (
         typeof name !== 'string' || !name.trim() || 

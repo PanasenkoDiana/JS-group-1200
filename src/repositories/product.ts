@@ -1,4 +1,11 @@
-let products = [
+export interface Product{
+    id: number
+    name: string
+    price: number
+    image: string
+    category: string
+}
+let products: Product[]= [
     {
         id: 1,
         name: "test",
@@ -36,14 +43,14 @@ let products = [
     }
 ]
 
-export function getAll(take){
+export const getAll=(take?:number)=>{
     if(!take){
         return [...products]
     }
     return products.slice(0, take)
 }
 
-export function getById(id){
+export const getById=(id:number)=>{
     return products.find(
         function(product){
             return product.id === id
@@ -51,16 +58,16 @@ export function getById(id){
     )
 }
 
-export function findByName(name){
+export const findByName=(name:string)=>{
     return products.find(
         function(product){
             return product.name.trim().toLowerCase() === name.trim().toLowerCase()
         }
     )
 }
-
-export function addProduct(newProduct){
-    return new Promise((resolve, reject) => {
+// Promise<Product> - generic тип позволяет передать тип внутрь типа
+export const addProduct=(newProduct: Product)=>{
+    return new Promise<Product>((resolve, reject) => {
         setTimeout(() => {
             products = [...products, newProduct]
             resolve(newProduct)
