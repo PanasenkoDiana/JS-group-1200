@@ -1,7 +1,5 @@
-export interface ProductRespone {
-    id: number
-    name: string
+export interface ProductResponse {
+    id: string
+    title: string
     price: number
-    image: string
-    category: string
 }

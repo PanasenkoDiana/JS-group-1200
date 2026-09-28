@@ -1,6 +1,8 @@
 export interface CreateProductRequest {
-    name: string
+    title: string
     price: number
-    image?: string
-    category: string
+}
+export interface UpdateProductRequest {
+    title?: string
+    price?: number
 }
