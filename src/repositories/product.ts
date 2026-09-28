@@ -1,11 +1,8 @@
-export interface Product{
-    id: number
-    name: string
-    price: number
-    image: string
-    category: string
-}
-let products: Product[]= [
+import type { Product } from "../domain/product/entity.ts"
+import type { ProductRepository } from "../domain/product/repository.ts"
+
+export function createProductRepository(): ProductRepository {
+    let products: Product[]= [
     {
         id: 1,
         name: "test",
@@ -41,36 +38,27 @@ let products: Product[]= [
         category: "test1category",
         image: '1.png'
     }
-]
-
-export const getAll=(take?:number)=>{
-    if(!take){
-        return [...products]
+    ]
+    return {
+        async getAll(take){
+            return take === undefined ? [...products] : products.slice(0, take)
+        },
+        async getById(id){
+            return products.find(
+                (product)=>{product.id === id}
+            )
+        },
+        async createProduct(data){
+            await new Promise<void>((resolve)=>{
+                setTimeout(resolve, 500)
+            })
+            const newId = products.length + 1
+            const product =  {
+                id: newId,
+                ...data
+            }
+            products = [...products, product]
+            return product
+        }
     }
-    return products.slice(0, take)
-}
-
-export const getById=(id:number)=>{
-    return products.find(
-        function(product){
-            return product.id === id
-        }
-    )
-}
-
-export const findByName=(name:string)=>{
-    return products.find(
-        function(product){
-            return product.name.trim().toLowerCase() === name.trim().toLowerCase()
-        }
-    )
-}
-// Promise<Product> - generic тип позволяет передать тип внутрь типа
-export const addProduct=(newProduct: Product)=>{
-    return new Promise<Product>((resolve, reject) => {
-        setTimeout(() => {
-            products = [...products, newProduct]
-            resolve(newProduct)
-        },500)
-    })
 }

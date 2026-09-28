@@ -1,8 +1,56 @@
-import * as productService from "../../services/product.js"
+import type { ProductService } from "../../services/product/product.types.js"
 import type { Request, Response } from "express"
 import type { CreateProductRequest } from "../dto/product/requests.js"
 import type { ProductRespone } from "../dto/product/responses.js"
 import type { ErrorResponse } from "../dto/product/errors.js"
+
+export interface ProductHandlers{ 
+    getProducts(
+        req:Request, 
+        res:Response<ProductRespone[] | ErrorResponse>
+    ): Promise<void>
+
+    getProductById(
+        req:Request, 
+        res:Response<ProductRespone | ErrorResponse>
+    ): Promise<void>
+
+    crateProduct(
+        req:Request<{}, {}, CreateProductRequest>, 
+        res:Response<ProductRespone | ErrorResponse>
+    ): Promise<void>
+}
+
+export function createProductHandler(
+    productService : ProductService
+): ProductHandlers{
+    return {
+        async getProducts(req,res){
+            try{ 
+                const {take} = req.query
+
+                if (!take) {
+                    const products = await productService.getProducts()
+                    return res.status(200).json(products)
+                }
+                
+                const takeNumber = Number(take)
+                
+                if (! Number.isInteger(takeNumber) || takeNumber <= 0){
+                    return res.status(400).json({message: 'Take must be a positive integer'})
+                } 
+                
+                const products = await productService.getProducts(takeNumber)
+                res.status(200).json(products)
+            } 
+            catch(error){
+                console.error(error)
+                res.status(500).json({message: "server error"})   
+            }
+            
+        }
+    } 
+}
 
 export const getProducts=(req:Request, res:Response)=>{
     const {take} = req.query

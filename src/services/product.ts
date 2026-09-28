@@ -1,31 +1,32 @@
-import * as productRepository from "../repositories/product.js"
+import type { ProductRepository } from "../domain/product/repository.js"
+import type { CreateProductInput, ProductService } from "./product/product.types.js"
 
-interface CreateProductData{
-    name: string
-    price: number
-    image?: string
-    category: string
-}
-export const getProducts=(take?:number)=>{
-    return productRepository.getAll(take)
-}
-
-export const getProductById=(id:number)=>{
-    return productRepository.getById(id)
-}
-
-export const createdProduct=async(data:CreateProductData)=>{
-    const duplicate = productRepository.findByName(data.name)
-    if (duplicate) {
-        return null
+export function createProductService(repository: ProductRepository): ProductService {
+    return {
+        getProducts(take?: number) {
+            return repository.getAll(take)  
+        },
+        getProductById(id: number) {
+            return repository.getById(id)
+        },
+//створюємо асинхронну функцію створення продукту
+//у параметрах вказуемо те, що приходить від кліенту
+        async createProduct(input: CreateProductInput) {
+            const name = input.name.trim()
+            const products = await repository.getAll()
+//метод Some перевіряє співпадає хоча б один елемент массиву з умовою 
+            const duplicate = products.some(
+                ( product ) => product.name.toLowerCase() === name.toLowerCase()
+            )
+            if (duplicate) {
+                return null
+            }
+            return repository.createProduct({
+                name,
+                price: input.price,
+                image: input.image ?? "",
+                category: input.category.trim()
+            })
+        }
     }
-    const products = productRepository.getAll()
-    const newProduct = {
-        id: products.length + 1,
-        name: data.name.trim(),
-        price: data.price,
-        category: data.category.trim(),
-        image: data.image ?? ""   
-    }
-    return await productRepository.addProduct(newProduct)
 }
