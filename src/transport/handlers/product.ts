@@ -1,7 +1,7 @@
 import type { ProductService } from "../../services/product/product.types.js"
 import type { Request, Response } from "express"
 import type { CreateProductRequest } from "../dto/product/requests.js"
-import type { ProductRespone } from "../dto/product/responses.js"
+import type { ProductResponse } from "../dto/product/responses.js"
 import type { ErrorResponse } from "../dto/product/errors.js"
 
 export interface ProductHandlers{ 
