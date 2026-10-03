@@ -1,107 +1,113 @@
-import type { ProductService } from "../../services/product/product.types.js"
-import type { Request, Response } from "express"
-import type { CreateProductRequest } from "../dto/product/requests.js"
-import type { ProductRespone } from "../dto/product/responses.js"
-import type { ErrorResponse } from "../dto/product/errors.js"
+import type { Request, Response } from "express";
+import type { ProductService } from "../../services/product/product.types.js";
+import type { ErrorResponse } from "../dto/product/errors.js";
+import type { CreateProductRequest } from "../dto/product/requests.js";
+import type { ProductResponse } from "../dto/product/responses.js";
 
-export interface ProductHandlers{ 
+export interface ProductHandlers {
     getProducts(
-        req:Request, 
-        res:Response<ProductRespone[] | ErrorResponse>
-    ): Promise<void>
+        req: Request,
+        res: Response<ProductResponse[] | ErrorResponse>,
+    ): Promise<void>;
 
     getProductById(
-        req:Request, 
-        res:Response<ProductRespone | ErrorResponse>
-    ): Promise<void>
+        req: Request,
+        res: Response<ProductResponse | ErrorResponse>,
+    ): Promise<void>;
 
-    crateProduct(
-        req:Request<{}, {}, CreateProductRequest>, 
-        res:Response<ProductRespone | ErrorResponse>
-    ): Promise<void>
+    createProduct(
+        req: Request<{}, {}, CreateProductRequest>,
+        res: Response<ProductResponse | ErrorResponse>,
+    ): Promise<void>;
 }
 
 export function createProductHandler(
-    productService : ProductService
-): ProductHandlers{
+    productService: ProductService,
+): ProductHandlers {
     return {
-        async getProducts(req,res){
-            try{ 
-                const {take} = req.query
+        async getProducts(req, res) {
+            try {
+                const { take } = req.query;
 
                 if (!take) {
-                    const products = await productService.getProducts()
-                    return res.status(200).json(products)
+                const products = await productService.getProducts();
+                res.status(200).json(products);
+                return;
                 }
-                
-                const takeNumber = Number(take)
-                
-                if (! Number.isInteger(takeNumber) || takeNumber <= 0){
-                    return res.status(400).json({message: 'Take must be a positive integer'})
-                } 
-                
-                const products = await productService.getProducts(takeNumber)
-                res.status(200).json(products)
-            } 
-            catch(error){
-                console.error(error)
-                res.status(500).json({message: "server error"})   
+
+                const takeNumber = Number(take);
+
+                if (!Number.isInteger(takeNumber) || takeNumber <= 0) {
+                res.status(400).json({ message: "take must be a positive integer" });
+                return;
+                }
+
+                const products = await productService.getProducts(takeNumber);
+                res.status(200).json(products);
+            } catch (error) {
+                console.error(error);
+                res.status(500).json({ message: "Internal server error" });
             }
-            
-        }
-    } 
-}
+            },
 
-export const getProducts=(req:Request, res:Response)=>{
-    const {take} = req.query
+        async getProductById(req, res) {
+            try {
+                const productId = Number(req.params.id);
 
-    if (!take) {
-        return res.status(200).json(productService.getProducts())
-    }
-    
-    const takeNumber = Number(take)
-    
-    if (! Number.isInteger(takeNumber) || takeNumber <= 0){
-        return res.status(400).json({message: 'Take must be a positive integer'})
-    }
+                if (!Number.isInteger(productId) || productId <= 0) {
+                res.status(400).json({ message: "id must be a positive integer" });
+                return;
+                }
 
-    res.status(200).json(productService.getProducts(takeNumber))
-}
+                const product = await productService.getProductById(productId);
 
-export const getProductById=(req:Request,res:Response)=>{
-    const { id } = req.params
-    const productId = Number(id)
-    if (! Number.isInteger(productId) || productId <= 0){
-        return res.status(400).json({message: 'Id must be a positive integer'})
-    }
+                if (!product) {
+                res.status(404).json({ message: "Product not found" });
+                return;
+                }
 
-    const product = productService.getProductById(productId)
+                res.status(200).json(product);
+            } catch (error) {
+                console.error(error);
+                res.status(500).json({ message: "Internal server error" });
+            }
+            },
 
-    if (! product) {
-        return res.status(404).json({message: 'Product not found'})
-    }
-    
-    res.status(200).json(product)
-}
+        async createProduct(req, res) {
+            try {
+                const body = req.body;
 
-export const createProduct=async(req:Request,res:Response)=>{
-    const { name, price, category, image } = req.body;
-    if  (
-        typeof name !== 'string' || !name.trim() || 
-        typeof price !== 'number' || price <= 0 ||
-        typeof category !== 'string' || !category.trim()
+                if (body === null || typeof body !== "object" || Array.isArray(body)) {
+                res.status(422).json({ message: "Invalid product data" });
+                return;
+                }
 
-    ){
-        return res.status(422).json({message: "invalid product"})
-    }
-    try{
-        const createdProduct = await productService.createdProduct({name, price, category, image})
-        
-        if(!createProduct){
-            return res.status(409).json({message: "Product already exists"})
-        }
-    }catch(error){
-        console.error(error)
-        return res.status(500).json({message:'Failed to create'})
-    }
+                const { name, price, image, category } = body;
+
+                if (
+                typeof name !== "string" || name.trim().length === 0 ||
+                typeof price !== "number" || !Number.isFinite(price) || price <= 0 ||
+                typeof category !== "string" || category.trim().length === 0 ||
+                (image !== undefined && typeof image !== "string")
+                ) {
+                res.status(422).json({ message: "Invalid product data" });
+                return;
+                }
+
+                const product = await productService.createProduct({
+                name, price, image, category,
+                });
+
+                if (!product) {
+                res.status(409).json({ message: "Product already exists" });
+                return;
+                }
+
+                res.status(201).json(product);
+            } catch (error) {
+                console.error(error);
+                res.status(500).json({ message: "Internal server error" });
+            }
+        },
+    };
 }

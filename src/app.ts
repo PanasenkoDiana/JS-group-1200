@@ -1,8 +1,15 @@
 import express from 'express'
-import productRouter from './transport/routers/product.js'
+import { createProductRouter } from './transport/routers/product.js'
+import { createProductHandler } from './transport/handlers/product.js';
+import { createProductRepository } from './repositories/product.js';
+import { createProductService } from './services/product.js';
 //const express = require('express');
 
 const app = express();
+const productRepository = createProductRepository()
+const productService = createProductService(productRepository)
+const productHandlers = createProductHandler(productService)
+const productRouter = createProductRouter(productHandlers)
 // app.use(express.json()) - встроенный middleware, который позволяет спарсить json обьект в js обьект
 app.use(express.json())
 app.use('/products', productRouter)
